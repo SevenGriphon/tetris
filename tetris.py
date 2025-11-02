@@ -16,15 +16,24 @@ class Block(object):
         self.pos.y = clamp(self.pos.y + y_offset, 0, 19)
 
     def draw(self):
-        rect = pg.Rect(grid[int(self.pos.x)][int(self.pos.y)], (BLOCK_SIZE, BLOCK_SIZE))
+        rect = pg.Rect(field.grid_pos[int(self.pos.x)][int(self.pos.y)], (BLOCK_SIZE, BLOCK_SIZE))
         pg.draw.rect(screen, self.color, rect)
 
+class Field(object):
+    def __init__(self, x, y):
+        self.grid_pos = [[pg.Vector2(x * BLOCK_SIZE, y * BLOCK_SIZE) for y in range(y)] for x in range(x)]
+        self.grid = [[False for y in range(y)] for x in range(x)]
+
+    def is_empty(self, pos :pg.Vector2):
+        return self.grid[int(pos.x)][int(pos.y)]
+
+    def place(self, pos):
+        self.grid[int(pos.x)][int(pos.y)] = True
 
 screen = pg.display.set_mode((200, 400))
 clock = pg.time.Clock()
 
-grid = [[pg.Vector2(x * BLOCK_SIZE, y * BLOCK_SIZE) for y in range(20)] for x in range(10)]
-
+field = Field(10, 20)
 block = Block(pg.Vector2(1, 1), pg.Color(255, 0, 0))
 dt = 0
 movement_direction = 0
@@ -46,7 +55,7 @@ while running:
     #rendering
     fall_timer -= dt
     if fall_timer <= 0:
-        if block.pos.y < len(grid[0])-1:
+        if block.pos.y < len(field.grid_pos[0])-1:
             block.move(0, 1)
 
         fall_timer = FALL_TIME

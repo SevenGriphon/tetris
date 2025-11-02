@@ -1,7 +1,7 @@
 import pygame as pg
 
 BLOCK_SIZE = 20
-FALL_TIME = 0.5
+FALL_TIME = 0.1
 
 def clamp(n, min_n, max_n):
     return min(max(n, min_n), max_n)
@@ -12,8 +12,14 @@ class Block(object):
         self.color = color
 
     def move(self, x_offset, y_offset):
-        self.pos.x = clamp(self.pos.x + x_offset, 0, 9)
-        self.pos.y = clamp(self.pos.y + y_offset, 0, 19)
+        pos = pg.Vector2(0, 0)
+        pos.x = clamp(self.pos.x + x_offset, 0, 9)
+        pos.y = self.pos.y + y_offset
+        if pos.y < len(field.grid_pos[0]) and field.is_empty(pos):
+            self.pos = pos
+            return True
+        else:
+            return False
 
     def draw(self):
         rect = pg.Rect(field.grid_pos[int(self.pos.x)][int(self.pos.y)], (BLOCK_SIZE, BLOCK_SIZE))
@@ -22,13 +28,20 @@ class Block(object):
 class Field(object):
     def __init__(self, x, y):
         self.grid_pos = [[pg.Vector2(x * BLOCK_SIZE, y * BLOCK_SIZE) for y in range(y)] for x in range(x)]
-        self.grid = [[False for y in range(y)] for x in range(x)]
+        self.grid  = [[None for y in range(y)] for x in range(x)]
 
     def is_empty(self, pos :pg.Vector2):
-        return self.grid[int(pos.x)][int(pos.y)]
+        return self.grid[int(pos.x)][int(pos.y)] is None
 
-    def place(self, pos):
-        self.grid[int(pos.x)][int(pos.y)] = True
+    def place(self, block :Block):
+        self.grid[int(block.pos.x)][int(block.pos.y)] = block
+
+    def draw(self):
+        for column in self.grid:
+            for cell in column:
+                if not (cell is None):
+                    cell.draw()
+
 
 screen = pg.display.set_mode((200, 400))
 clock = pg.time.Clock()
@@ -55,8 +68,9 @@ while running:
     #rendering
     fall_timer -= dt
     if fall_timer <= 0:
-        if block.pos.y < len(field.grid_pos[0])-1:
-            block.move(0, 1)
+        if not block.move(0, 1):
+            field.place(block)
+            block = Block(pg.Vector2(0,0), pg.Color(255, 0, 0))
 
         fall_timer = FALL_TIME
 
@@ -64,7 +78,7 @@ while running:
     movement_direction = 0
 
     block.draw()
-
+    field.draw()
 
     #show frame
     pg.display.flip()

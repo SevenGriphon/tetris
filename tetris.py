@@ -1,7 +1,7 @@
 import pygame as pg
 
 BLOCK_SIZE = 20
-FALL_TIME = 0.1
+FALL_TIME = 0.25
 
 def clamp(n, min_n, max_n):
     return min(max(n, min_n), max_n)

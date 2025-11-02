@@ -37,14 +37,9 @@ while running:
             running = False
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_d or event.key == pg.K_RIGHT:
-                movement_direction += 1
+                movement_direction = min(movement_direction + 1, 1)
             elif event.key == pg.K_a or event.key == pg.K_LEFT:
-                movement_direction -= 1
-        elif event.type == pg.KEYUP:
-            if event.key == pg.K_d or event.key == pg.K_RIGHT:
-                movement_direction -= 1
-            elif event.key == pg.K_a or event.key == pg.K_LEFT:
-                movement_direction += 1
+                movement_direction = max(movement_direction - 1, -1)
     #clear
     screen.fill("black")
     
@@ -57,6 +52,8 @@ while running:
         fall_timer = FALL_TIME
 
     block.move(movement_direction, 0)
+    movement_direction = 0
+
     block.draw()
 
 

@@ -1,31 +1,47 @@
 import pygame as pg
 import random
 
-from contourpy.typecheck import check_lines
-from soupsieve.util import lower
-
+WINDOW_SIZE = (200, 400)
 BLOCK_SIZE = 20
 FALL_TIME = 0.25
 
 def clamp(n, min_n, max_n):
     return min(max(n, min_n), max_n)
 
+
+def can_spawn(shape_pos, shape_map):
+    for pos in shape_map:
+        in_x_bounds = len(field.grid_pos) > pos[0]+shape_pos.x >= 0
+        if not (in_x_bounds and field.is_empty(shape_pos+pos)):
+            return False
+    return True
+
+
 class Shape(object):
-    def __init__(self, shape_map, color, shape_pos):
-        left, top = shape_map[0] - shape_pos
+    def __init__(self, shape_map, color):
+        top = shape_map[0][1]
         for block in shape_map[1:]:
-            left = min(left, block[0])
             top = min(top, block[1])
-        left_top_coner = pg.Vector2(left, top)
+
+        shape_pos = None
+        for x in range(len(field.grid)):
+            if can_spawn(pg.Vector2(x, -top), shape_map):
+                shape_pos = pg.Vector2(x, -top)
+                break
+
+        if shape_pos is None:
+            game_over()
+            self.success = False
+            return
+
+        self.success = True
         self.blocks = []
         self.core_block = None
         for pos in shape_map:
-            # color_ = pg.Color(255, 0, 0) if pos[0]==0==pos[1] else color
-            block = Block(shape_pos - left_top_coner + pg.Vector2(pos[0], pos[1]), color)
+            block = Block(shape_pos + pg.Vector2(pos[0], pos[1]), color)
             if pos[0]==0==pos[1]:
                 self.core_block = block
             self.blocks.append(block)
-
 
     def move(self, x_offset, y_offset):
         shape_can_move = True
@@ -140,9 +156,14 @@ shapes = [
 ]
 def get_random_shape():
     i = random.randint(0, len(shapes)-1)
-    return Shape(shapes[i]["shape_map"], shapes[i]["color"], pg.Vector2(0, 0))
+    return Shape(shapes[i]["shape_map"], shapes[i]["color"])
 
-screen = pg.display.set_mode((200, 400))
+def game_over():
+    global is_game_over
+    is_game_over = True
+    print("Game Over!")
+
+screen = pg.display.set_mode(WINDOW_SIZE)
 clock = pg.time.Clock()
 
 field = Field(10, 20)
@@ -154,6 +175,7 @@ drop = False
 
 fall_timer = FALL_TIME
 running = True
+is_game_over = False
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -167,27 +189,37 @@ while running:
                 shape.rotate()
             elif event.key == pg.K_s or event.key == pg.K_DOWN:
                 drop = True
+
     #clear
     screen.fill("black")
-    
+
     #rendering
-    fall_timer -= dt
-    if fall_timer <= 0:
-        if not shape.move(0, 1):
-            shape.place()
-            shape = get_random_shape()
+    if not is_game_over:
+        fall_timer -= dt
+        if fall_timer <= 0:
+            if not shape.move(0, 1):
+                shape.place()
+                shape = get_random_shape()
+                if not shape.success:
+                    continue
 
-        fall_timer = FALL_TIME
+            fall_timer = FALL_TIME
 
-    shape.move(movement_direction, 0)
-    movement_direction = 0
-    if drop:
-        while shape.move(0, 1):
-            pass
-        drop = False
+        shape.move(movement_direction, 0)
+        movement_direction = 0
+        if drop:
+            while shape.move(0, 1):
+                pass
+            drop = False
 
-    shape.draw()
+        shape.draw()
+
     field.draw()
+
+    if is_game_over:
+        pg.font.init()
+        font = pg.font.Font(None, 48).render("Game Over!", False, pg.Color(255, 0, 0))
+        screen.blit(font, ((WINDOW_SIZE[0]-font.get_width())/2, (WINDOW_SIZE[1]-font.get_height())/2))
 
     #show frame
     pg.display.flip()

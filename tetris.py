@@ -1,5 +1,5 @@
 import pygame as pg
-from pygame import Vector2
+import random
 
 BLOCK_SIZE = 20
 FALL_TIME = 0.25
@@ -17,8 +17,8 @@ class Shape(object):
         self.blocks = []
         self.core_block = None
         for pos in shape_map:
-            color_ = pg.Color(255, 0, 0) if pos[0]==0==pos[1] else color
-            block = Block(shape_pos - left_top_coner + pg.Vector2(pos[0], pos[1]), color_)
+            # color_ = pg.Color(255, 0, 0) if pos[0]==0==pos[1] else color
+            block = Block(shape_pos - left_top_coner + pg.Vector2(pos[0], pos[1]), color)
             if pos[0]==0==pos[1]:
                 self.core_block = block
             self.blocks.append(block)
@@ -105,11 +105,25 @@ class Field(object):
                     cell.draw()
 
 
+shapes = [
+    {"shape_map": [(0,-1), (0,0), (0, 1), (0, 2)], "color": pg.Color(0, 255, 255)}, #I
+    {"shape_map": [(0,-1), (0,0), (0, 1), (1, 1)], "color": pg.Color(0, 0, 255)}, #L
+    {"shape_map": [(0,-1), (0,0), (0, 1), (-1, 1)], "color": pg.Color(255, 112, 0)}, #J
+    {"shape_map": [(0,0), (-1,1), (0, 1), (1, 1)], "color": pg.Color(255, 0, 255)}, #T
+    {"shape_map": [(0,0), (0,1), (1, 0), (1, 1)], "color": pg.Color(255, 255, 0)}, #O
+    {"shape_map": [(1,-1), (0,-1), (0, 0), (-1, 0)], "color": pg.Color(0, 255, 0)}, #S
+    {"shape_map": [(-1,-1), (0,-1), (0, 0), (1, 0)], "color": pg.Color(255, 0, 0)}, #Z
+]
+def get_random_shape():
+    i = random.randint(0, len(shapes)-1)
+    return Shape(shapes[i]["shape_map"], shapes[i]["color"], pg.Vector2(0, 0))
+
 screen = pg.display.set_mode((200, 400))
 clock = pg.time.Clock()
 
 field = Field(10, 20)
-shape = Shape([(0,-1), (0,0), (0, 1), (1, 1)], pg.Color(255, 255, 0), pg.Vector2(0, 0))
+shape = get_random_shape()
+
 dt = 0
 movement_direction = 0
 running = True
@@ -134,7 +148,7 @@ while running:
     if fall_timer <= 0:
         if not shape.move(0, 1):
             shape.place()
-            shape = Shape([(0,0), (0,1), (0, 2), (1, 2)], pg.Color(255, 255, 0), pg.Vector2(0, 0))
+            shape = get_random_shape()
 
         fall_timer = FALL_TIME
 

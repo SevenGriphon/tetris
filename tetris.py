@@ -1,4 +1,5 @@
 import pygame as pg
+from pygame import Vector2
 
 BLOCK_SIZE = 20
 FALL_TIME = 0.25
@@ -20,6 +21,7 @@ class Shape(object):
         if shape_can_move:
             for block in self.blocks:
                 block.move(x_offset, y_offset)
+            self.pos += pg.Vector2(x_offset, y_offset)
 
         return shape_can_move
 
@@ -31,6 +33,23 @@ class Shape(object):
         for block in self.blocks:
             field.place(block)
 
+    def rotate(self):
+        can_rotate = True
+        for block in self.blocks:
+            block_pos = block.pos-self.pos
+            block_new_pos = pg.Vector2(block_pos.y, -block_pos.x)
+            block_offset = block_new_pos - block_pos
+            if not block.can_move(block_offset.x, block_offset.y):
+                can_rotate = False
+                break
+
+        if can_rotate:
+            for block in self.blocks:
+                block_pos = block.pos - self.pos
+                block_new_pos = pg.Vector2(block_pos.y, -block_pos.x)
+                block_offset = block_new_pos - block_pos
+                block.move(block_offset.x, block_offset.y)
+
 
 
 class Block(object):
@@ -41,7 +60,7 @@ class Block(object):
     def can_move(self, x_offset, y_offset):
         pos = self.pos + pg.Vector2(x_offset, y_offset)
         in_x_bounds = len(field.grid_pos) > pos.x >= 0
-        in_y_bounds = pos.y < len(field.grid_pos[0])
+        in_y_bounds = 0 <= pos.y < len(field.grid_pos[0])
         if in_x_bounds and in_y_bounds and field.is_empty(pos):
             return True
         else:
@@ -96,6 +115,8 @@ while running:
                 movement_direction = min(movement_direction + 1, 1)
             elif event.key == pg.K_a or event.key == pg.K_LEFT:
                 movement_direction = max(movement_direction - 1, -1)
+            elif event.key == pg.K_w or event.key == pg.K_UP:
+                shape.rotate()
     #clear
     screen.fill("black")
     

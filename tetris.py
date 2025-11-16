@@ -126,9 +126,10 @@ shape = get_random_shape()
 
 dt = 0
 movement_direction = 0
-running = True
+drop = False
 
 fall_timer = FALL_TIME
+running = True
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -140,6 +141,8 @@ while running:
                 movement_direction = max(movement_direction - 1, -1)
             elif event.key == pg.K_w or event.key == pg.K_UP:
                 shape.rotate()
+            elif event.key == pg.K_s or event.key == pg.K_DOWN:
+                drop = True
     #clear
     screen.fill("black")
     
@@ -154,6 +157,10 @@ while running:
 
     shape.move(movement_direction, 0)
     movement_direction = 0
+    if drop:
+        while shape.move(0, 1):
+            pass
+        drop = False
 
     shape.draw()
     field.draw()

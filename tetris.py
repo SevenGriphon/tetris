@@ -47,20 +47,20 @@ class Shape(object):
 
     def rotate(self):
         can_rotate = True
-        for block in self.blocks:
-            block_pos = block.pos-self.core_block.pos
+        block_offsets = []
+        for i, block in enumerate(self.blocks):
+            block_pos = block.pos - self.core_block.pos
             block_new_pos = pg.Vector2(block_pos.y, -block_pos.x)
-            block_offset = block_new_pos - block_pos
-            if not block.can_move(block_offset.x, block_offset.y):
+            block_offsets.append(block_new_pos - block_pos)
+
+        for i, block in enumerate(self.blocks):
+            if not block.can_move(block_offsets[i].x, block_offsets[i].y):
                 can_rotate = False
                 break
 
         if can_rotate:
-            for block in self.blocks:
-                block_pos = block.pos - self.core_block.pos
-                block_new_pos = pg.Vector2(block_pos.y, -block_pos.x)
-                block_offset = block_new_pos - block_pos
-                block.move(block_offset.x, block_offset.y)
+            for i, block in enumerate(self.blocks):
+                block.move(block_offsets[i].x, block_offsets[i].y)
 
 
 

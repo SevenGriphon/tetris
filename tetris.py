@@ -1,6 +1,9 @@
 import pygame as pg
 import random
 
+from contourpy.typecheck import check_lines
+from soupsieve.util import lower
+
 BLOCK_SIZE = 20
 FALL_TIME = 0.25
 
@@ -82,7 +85,6 @@ class Block(object):
         else:
             return False
 
-
     def draw(self):
         rect = pg.Rect(field.grid_pos[int(self.pos.x)][int(self.pos.y)], (BLOCK_SIZE, BLOCK_SIZE))
         pg.draw.rect(screen, self.color, rect)
@@ -97,6 +99,28 @@ class Field(object):
 
     def place(self, block :Block):
         self.grid[int(block.pos.x)][int(block.pos.y)] = block
+        self.check_lines()
+
+    def check_lines(self):
+        for y in range(len(self.grid[0])):
+            is_full = True
+            for x in range(len(self.grid)):
+                if self.grid[x][y] is None:
+                    is_full = False
+                    break
+            if is_full:
+                for x in range(len(self.grid)):
+                    self.grid[x][y] = None
+                self.lower_lines(y)
+
+    def lower_lines(self, start_from):
+        for y in range(start_from, 0, -1):
+            for x in range(len(self.grid)):
+                self.grid[x][y] = self.grid[x][y-1]
+                if not self.grid[x][y] is None:
+                    self.grid[x][y].pos = pg.Vector2(x, y)
+
+
 
     def draw(self):
         for column in self.grid:

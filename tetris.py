@@ -9,10 +9,20 @@ def clamp(n, min_n, max_n):
 
 class Shape(object):
     def __init__(self, shape_map, color, shape_pos):
-        self.pos = shape_pos
+        left, top = shape_map[0] - shape_pos
+        for block in shape_map[1:]:
+            left = min(left, block[0])
+            top = min(top, block[1])
+        left_top_coner = pg.Vector2(left, top)
         self.blocks = []
+        self.core_block = None
         for pos in shape_map:
-            self.blocks.append(Block(shape_pos + pg.Vector2(pos[0], pos[1]), color))
+            color_ = pg.Color(255, 0, 0) if pos[0]==0==pos[1] else color
+            block = Block(shape_pos - left_top_coner + pg.Vector2(pos[0], pos[1]), color_)
+            if pos[0]==0==pos[1]:
+                self.core_block = block
+            self.blocks.append(block)
+
 
     def move(self, x_offset, y_offset):
         shape_can_move = True
@@ -21,7 +31,6 @@ class Shape(object):
         if shape_can_move:
             for block in self.blocks:
                 block.move(x_offset, y_offset)
-            self.pos += pg.Vector2(x_offset, y_offset)
 
         return shape_can_move
 
@@ -36,7 +45,7 @@ class Shape(object):
     def rotate(self):
         can_rotate = True
         for block in self.blocks:
-            block_pos = block.pos-self.pos
+            block_pos = block.pos-self.core_block.pos
             block_new_pos = pg.Vector2(block_pos.y, -block_pos.x)
             block_offset = block_new_pos - block_pos
             if not block.can_move(block_offset.x, block_offset.y):
@@ -45,7 +54,7 @@ class Shape(object):
 
         if can_rotate:
             for block in self.blocks:
-                block_pos = block.pos - self.pos
+                block_pos = block.pos - self.core_block.pos
                 block_new_pos = pg.Vector2(block_pos.y, -block_pos.x)
                 block_offset = block_new_pos - block_pos
                 block.move(block_offset.x, block_offset.y)
@@ -100,7 +109,7 @@ screen = pg.display.set_mode((200, 400))
 clock = pg.time.Clock()
 
 field = Field(10, 20)
-shape = Shape([(0,0), (0,1), (0, 2), (1, 2)], pg.Color(255, 255, 0), pg.Vector2(0, 0))
+shape = Shape([(0,-1), (0,0), (0, 1), (1, 1)], pg.Color(255, 255, 0), pg.Vector2(0, 0))
 dt = 0
 movement_direction = 0
 running = True

@@ -1,8 +1,9 @@
 import pygame as pg
 import random
 
+FIELD_SIZE = (10, 20)
 WINDOW_SIZE = (200, 400)
-BLOCK_SIZE = 20
+BLOCK_SIZE = (WINDOW_SIZE[0]/FIELD_SIZE[0] ,WINDOW_SIZE[1]/FIELD_SIZE[1])
 FALL_TIME = 0.25
 
 def clamp(n, min_n, max_n):
@@ -102,12 +103,12 @@ class Block(object):
             return False
 
     def draw(self):
-        rect = pg.Rect(field.grid_pos[int(self.pos.x)][int(self.pos.y)], (BLOCK_SIZE, BLOCK_SIZE))
+        rect = pg.Rect(field.grid_pos[int(self.pos.x)][int(self.pos.y)], (BLOCK_SIZE[0], BLOCK_SIZE[1]))
         pg.draw.rect(screen, self.color, rect)
 
 class Field(object):
     def __init__(self, x, y):
-        self.grid_pos = [[pg.Vector2(x * BLOCK_SIZE, y * BLOCK_SIZE) for y in range(y)] for x in range(x)]
+        self.grid_pos = [[pg.Vector2(x * BLOCK_SIZE[0], y * BLOCK_SIZE[1]) for y in range(y)] for x in range(x)]
         self.grid :list[list[Block|None]] = [[None for y in range(y)] for x in range(x)]
 
     def is_empty(self, pos :pg.Vector2):

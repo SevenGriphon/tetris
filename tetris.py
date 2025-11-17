@@ -186,8 +186,9 @@ while running:
                 movement_direction = min(movement_direction + 1, 1)
             elif event.key == pg.K_a or event.key == pg.K_LEFT:
                 movement_direction = max(movement_direction - 1, -1)
-            elif event.key == pg.K_w or event.key == pg.K_UP:
-                shape.rotate()
+            elif event.key == pg.K_w or event.key == pg.K_UP or event.key == pg.K_z or event.key == pg.K_f:
+                if not is_game_over:
+                    shape.rotate()
             elif event.key == pg.K_s or event.key == pg.K_DOWN:
                 drop = True
 
